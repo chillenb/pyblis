@@ -184,3 +184,43 @@ def swapv(x, y):
     xo = core.bli_obj_create_from(x)
     yo = core.bli_obj_create_from(y)
     libblis.bli_swapv(ctypes.byref(xo), ctypes.byref(yo))
+
+def axpy2v(alphax, alphay, x, y, z, conjx=False, conjy=False):
+    objalphax = core.bli_createscalar(alphax)
+    objalphay = core.bli_createscalar(alphay)
+    check_vecargs(x, y, z)
+    if np.iscomplex(alphax) or np.iscomplex(alphay):
+        assert np.iscomplexobj(y)
+    xo = core.bli_obj_create_from(x)
+    yo = core.bli_obj_create_from(y)
+    zo = core.bli_obj_create_from(z)
+    if conjx:
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(xo))
+    if conjy:
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(yo))
+    libblis.bli_axpy2v(
+        ctypes.byref(objalphax),
+        ctypes.byref(objalphay),
+        ctypes.byref(xo),
+        ctypes.byref(yo),
+        ctypes.byref(zo),
+    )
+
+def dotaxpyv(alpha, x, y, z, conjx=False, conjy=False):
+    objalpha = core.bli_createscalar(alpha)
+    check_vecargs(x, y, z)
+    if np.iscomplex(alpha):
+        assert np.iscomplexobj(y)
+    xo = core.bli_obj_create_from(x)
+    yo = core.bli_obj_create_from(y)
+    zo = core.bli_obj_create_from(z)
+    if conjx:
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(xo))
+    if conjy:
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(yo))
+    libblis.bli_dotaxpyv(
+        ctypes.byref(objalpha),
+        ctypes.byref(xo),
+        ctypes.byref(yo),
+        ctypes.byref(zo),
+    )

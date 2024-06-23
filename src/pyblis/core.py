@@ -7,6 +7,24 @@ from pathlib import Path
 import numpy as np
 
 
+def _get_num_cpus():
+    try:
+        import psutil
+
+        p = psutil.Process()
+        if hasattr(p, "cpu_affinity"):
+            maxcpus = min(psutil.cpu_count(logical=False), len(p.cpu_affinity()))
+        else:
+            maxcpus = psutil.cpu_count(logical=False)
+        if maxcpus is not None:
+            return maxcpus
+    except ImportError:
+        pass
+    if hasattr(os, "sched_getaffinity"):
+        return len(os.sched_getaffinity(0))
+    return os.cpu_count()
+
+
 def _load_blis():
     blis_search_paths = []
     if "LD_LIBRARY_PATH" in os.environ:
@@ -30,6 +48,9 @@ _blis_lib = _load_blis()
 _blis_lib.bli_init()
 
 libblis = _blis_lib
+
+if "BLIS_NUM_THREADS" not in os.environ and "OMP_NUM_THREADS" not in os.environ:
+    libblis.bli_thread_set_num_threads(c_int(_get_num_cpus()))
 
 if libblis.bli_info_get_int_type_size() == 64:
     int_type_size = 64
@@ -89,7 +110,9 @@ BLIS_PACK_PANEL_SHIFT = BLIS_PACK_SCHEMA_SHIFT
 BLIS_PACK_FORMAT_SHIFT = BLIS_PACK_PANEL_SHIFT + BLIS_PACK_PANEL_NUM_BITS
 BLIS_PACK_SHIFT = BLIS_PACK_FORMAT_SHIFT + BLIS_PACK_FORMAT_NUM_BITS
 BLIS_PACK_REV_IF_UPPER_SHIFT = BLIS_PACK_SCHEMA_SHIFT + BLIS_PACK_SCHEMA_NUM_BITS
-BLIS_PACK_REV_IF_LOWER_SHIFT = BLIS_PACK_REV_IF_UPPER_SHIFT + BLIS_PACK_REV_IF_UPPER_NUM_BITS
+BLIS_PACK_REV_IF_LOWER_SHIFT = (
+    BLIS_PACK_REV_IF_UPPER_SHIFT + BLIS_PACK_REV_IF_UPPER_NUM_BITS
+)
 BLIS_PACK_BUFFER_SHIFT = BLIS_PACK_REV_IF_LOWER_SHIFT + BLIS_PACK_REV_IF_LOWER_NUM_BITS
 BLIS_STRUC_SHIFT = BLIS_PACK_BUFFER_SHIFT + BLIS_PACK_BUFFER_NUM_BITS
 BLIS_COMP_PREC_SHIFT = BLIS_STRUC_SHIFT + BLIS_STRUC_NUM_BITS
@@ -114,8 +137,12 @@ BLIS_PACK_SCHEMA_BITS = ((1 << BLIS_PACK_SCHEMA_NUM_BITS) - 1) << BLIS_PACK_SCHE
 BLIS_PACK_PANEL_BIT = ((1 << BLIS_PACK_PANEL_NUM_BITS) - 1) << BLIS_PACK_PANEL_SHIFT
 BLIS_PACK_FORMAT_BITS = ((1 << BLIS_PACK_FORMAT_NUM_BITS) - 1) << BLIS_PACK_FORMAT_SHIFT
 BLIS_PACK_BIT = ((1 << BLIS_PACK_NUM_BITS) - 1) << BLIS_PACK_SHIFT
-BLIS_PACK_REV_IF_UPPER_BIT = ((1 << BLIS_PACK_REV_IF_UPPER_NUM_BITS) - 1) << BLIS_PACK_REV_IF_UPPER_SHIFT
-BLIS_PACK_REV_IF_LOWER_BIT = ((1 << BLIS_PACK_REV_IF_LOWER_NUM_BITS) - 1) << BLIS_PACK_REV_IF_LOWER_SHIFT
+BLIS_PACK_REV_IF_UPPER_BIT = (
+    (1 << BLIS_PACK_REV_IF_UPPER_NUM_BITS) - 1
+) << BLIS_PACK_REV_IF_UPPER_SHIFT
+BLIS_PACK_REV_IF_LOWER_BIT = (
+    (1 << BLIS_PACK_REV_IF_LOWER_NUM_BITS) - 1
+) << BLIS_PACK_REV_IF_LOWER_SHIFT
 BLIS_PACK_BUFFER_BITS = ((1 << BLIS_PACK_BUFFER_NUM_BITS) - 1) << BLIS_PACK_BUFFER_SHIFT
 BLIS_STRUC_BITS = ((1 << BLIS_STRUC_NUM_BITS) - 1) << BLIS_STRUC_SHIFT
 BLIS_COMP_PREC_BIT = ((1 << BLIS_PRECISION_NUM_BITS) - 1) << BLIS_COMP_PREC_SHIFT
@@ -183,6 +210,7 @@ typechar_to_blis_dt = {
 
 def get_blis_trans_t(trans: bool, conj: bool):
     return 8 * (int(trans) + 2 * int(conj))
+
 
 def get_blis_side_t(side_char):
     if side_char.upper() == "L":
@@ -393,3 +421,15 @@ def bli_obj_free(obj):
 
 def bli_obj_set_conjtrans(trans, obj):
     obj.info = (obj.info & ~BLIS_CONJTRANS_BITS) | trans
+
+
+def bli_obj_set_conj(conj, obj):
+    obj.info = (obj.info & ~BLIS_CONJ_BIT) | conj
+
+
+def bli_obj_set_uplo(uplo, obj):
+    obj.info = (obj.info & ~BLIS_UPLO_BITS) | uplo
+
+
+def bli_obj_set_diag(diag, obj):
+    obj.info = (obj.info & ~BLIS_DIAG_BIT) | diag

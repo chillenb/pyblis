@@ -185,6 +185,7 @@ def swapv(x, y):
     yo = core.bli_obj_create_from(y)
     libblis.bli_swapv(ctypes.byref(xo), ctypes.byref(yo))
 
+
 def axpy2v(alphax, alphay, x, y, z, conjx=False, conjy=False):
     objalphax = core.bli_createscalar(alphax)
     objalphay = core.bli_createscalar(alphay)
@@ -205,6 +206,7 @@ def axpy2v(alphax, alphay, x, y, z, conjx=False, conjy=False):
         ctypes.byref(yo),
         ctypes.byref(zo),
     )
+
 
 def dotaxpyv(alpha, x, y, z, conjx=False, conjy=False):
     objalpha = core.bli_createscalar(alpha)

@@ -23,7 +23,7 @@ def addv(x, y, conj=False):
     xo = core.bli_obj_create_from(x)
     yo = core.bli_obj_create_from(y)
     if conj:
-        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(xo))
     libblis.bli_addv(ctypes.byref(xo), ctypes.byref(yo))
 
 
@@ -46,7 +46,7 @@ def axpyv(alpha, x, y, conj=False):
     xo = core.bli_obj_create_from(x)
     yo = core.bli_obj_create_from(y)
     if conj:
-        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(xo))
     libblis.bli_axpyv(ctypes.byref(objalpha), ctypes.byref(xo), ctypes.byref(yo))
 
 
@@ -59,9 +59,9 @@ def axpbyv(alpha, x, beta, y, conjx=False, conjy=False):
     xo = core.bli_obj_create_from(x)
     yo = core.bli_obj_create_from(y)
     if conjx:
-        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(xo))
     if conjy:
-        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(yo))
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(yo))
     libblis.bli_axpbyv(
         ctypes.byref(objalpha),
         ctypes.byref(xo),
@@ -75,7 +75,7 @@ def copyv(x, y, conj=False):
     xo = core.bli_obj_create_from(x)
     yo = core.bli_obj_create_from(y)
     if conj:
-        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(xo))
     libblis.bli_copyv(ctypes.byref(xo), ctypes.byref(yo))
 
 
@@ -84,9 +84,9 @@ def dotv(x, y, conjx=False, conjy=False):
     xo = core.bli_obj_create_from(x)
     yo = core.bli_obj_create_from(y)
     if conjx:
-        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(xo))
     if conjy:
-        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(yo))
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(yo))
     resdtype = np.result_type(x, y)
     rho = core.bli_createscalar(0, resdtype.char)
     libblis.bli_dotv(ctypes.byref(xo), ctypes.byref(yo), ctypes.byref(rho))
@@ -102,9 +102,9 @@ def dotxv(alpha, x, y, beta, conjx=False, conjy=False):
     xo = core.bli_obj_create_from(x)
     yo = core.bli_obj_create_from(y)
     if conjx:
-        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(xo))
     if conjy:
-        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(yo))
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(yo))
     resdtype = np.result_type(x, y)
     rho = core.bli_createscalar(0, resdtype.char)
     libblis.bli_dotxv(
@@ -121,7 +121,7 @@ def invertv(x, conj=False):
     xo = core.bli_obj_create_from(x)
     check_vecargs(x)
     if conj:
-        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(xo))
     libblis.bli_invertv(ctypes.byref(xo))
 
 
@@ -145,7 +145,7 @@ def scal2v(alpha, x, y, conj=False):
     xo = core.bli_obj_create_from(x)
     yo = core.bli_obj_create_from(y)
     if conj:
-        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(xo))
     libblis.bli_scal2v(ctypes.byref(objalpha), ctypes.byref(xo), ctypes.byref(yo))
 
 
@@ -175,7 +175,7 @@ def subv(x, y, conj=False):
     xo = core.bli_obj_create_from(x)
     yo = core.bli_obj_create_from(y)
     if conj:
-        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
+        libblis.bli_obj_set_conj(core.BLIS_CONJUGATE, ctypes.byref(xo))
     libblis.bli_subv(ctypes.byref(xo), ctypes.byref(yo))
 
 

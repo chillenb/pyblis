@@ -42,7 +42,8 @@ elif libblis.bli_info_get_int_type_size() == 32:
     obj_t_buffer_offset = 40
     guint_t = ctypes.c_uint32
 else:
-    raise ValueError("Unknown blis int type size")
+    msg = "Unknown blis int type size"
+    raise ValueError(msg)
 
 
 # it's 160 bytes.
@@ -233,7 +234,8 @@ def bli_allocmatrix(shape, order="C", dtype=np.float64):
         rs = n
         cs = 1
     else:
-        raise ValueError(f"Unknown order: {order}")
+        msg = f"Unknown order: {order}"
+        raise ValueError(msg)
     obj = _obj_t()
 
     libblis.bli_obj_create.argtypes = [
@@ -293,7 +295,8 @@ def bli_readscalar(obj):
         return scal.real + 1j * scal.imag
     if dt == BLIS_INT:
         return ctypes.cast(obj.buffer, ctypes.POINTER(gint_t)).contents.value
-    raise ValueError("Unknown blis datatype")
+    msg = "Unknown blis datatype"
+    raise ValueError(msg)
 
 
 def bli_obj_free(obj):

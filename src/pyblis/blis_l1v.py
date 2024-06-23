@@ -3,7 +3,8 @@ import ctypes
 import numpy as np
 
 from pyblis import core
-from pyblis.core import libblis, gint_t
+from pyblis.core import gint_t, libblis
+
 
 def check_vecargs(*args):
     if not args:
@@ -28,7 +29,7 @@ def bli_addv(x, y, conj=False):
 
 def bli_amaxv(x):
     xo = core.bli_obj_create_from(x)
-    into = core.bli_createscalar(0, typechar='l')
+    into = core.bli_createscalar(0, typechar="l")
     retval = gint_t()
     libblis.bli_obj_create_1x1_with_attached_buffer(
         core.BLIS_INT, ctypes.byref(retval), ctypes.byref(into)
@@ -66,10 +67,7 @@ def bli_dotv(x, y, conjx=False, conjy=False):
         libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
     if conjy:
         libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(yo))
-    rho = core._obj_t()
     resdtype = np.result_type(x, y)
-    libblis.bli_obj_create_1x1(core.dtypes_to_blis[resdtype.char], ctypes.byref(rho))
+    rho = core.bli_createscalar(0, resdtype.char)
     libblis.bli_dotv(ctypes.byref(xo), ctypes.byref(yo), ctypes.byref(rho))
-    retval = core.bli_readscalar(rho)
-    core.bli_obj_free(rho)
-    return retval
+    return core.bli_readscalar(rho)

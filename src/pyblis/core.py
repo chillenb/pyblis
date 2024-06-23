@@ -1,11 +1,7 @@
 import ctypes
-from ctypes import c_byte, c_int
-
-
-import ctypes
 import os
 import sys
-from dataclasses import dataclass
+from ctypes import c_byte, c_int
 from pathlib import Path
 
 import numpy as np
@@ -36,15 +32,15 @@ _blis_lib.bli_init()
 libblis = _blis_lib
 
 if libblis.bli_info_get_int_type_size() == 64:
-    int_type_size=64
-    gint_t=ctypes.c_int64
-    obj_t_buffer_offset=64
-    guint_t=ctypes.c_uint64
+    int_type_size = 64
+    gint_t = ctypes.c_int64
+    obj_t_buffer_offset = 64
+    guint_t = ctypes.c_uint64
 elif libblis.bli_info_get_int_type_size() == 32:
-    int_type_size=32
-    gint_t=ctypes.c_int32
-    obj_t_buffer_offset=40
-    guint_t=ctypes.c_uint32
+    int_type_size = 32
+    gint_t = ctypes.c_int32
+    obj_t_buffer_offset = 40
+    guint_t = ctypes.c_uint32
 else:
     raise ValueError("Unknown blis int type size")
 
@@ -96,7 +92,7 @@ blis_dt_to_typechar = {
     BLIS_DOUBLE: "d",
     BLIS_SCOMPLEX: "F",
     BLIS_DCOMPLEX: "D",
-    BLIS_INT: ('l' if int_type_size == 64 else 'i'),
+    BLIS_INT: ("l" if int_type_size == 64 else "i"),
 }
 
 typechar_to_blis_dt = {
@@ -104,34 +100,38 @@ typechar_to_blis_dt = {
     "d": BLIS_DOUBLE,
     "F": BLIS_SCOMPLEX,
     "D": BLIS_DCOMPLEX,
-    'l': BLIS_INT,
-    'i': BLIS_INT
+    "l": BLIS_INT,
+    "i": BLIS_INT,
 }
 
-    
+
 def get_blis_dtype(arr):
     return typechar_to_blis_dt[arr.dtype.char]
+
 
 class _dcomplex(ctypes.Structure):
     _fields_ = [  # noqa: RUF012
         ("real", ctypes.c_double),
-        ("imag", ctypes.c_double)
+        ("imag", ctypes.c_double),
     ]
+
 
 class _scomplex(ctypes.Structure):
     _fields_ = [  # noqa: RUF012
         ("real", ctypes.c_float),
-        ("imag", ctypes.c_float)
+        ("imag", ctypes.c_float),
     ]
+
 
 typechar_to_ctypes = {
     "f": ctypes.c_float,
     "d": ctypes.c_double,
     "F": _scomplex,
     "D": _dcomplex,
-    'l': ctypes.c_long,
-    'i': ctypes.c_int
+    "l": ctypes.c_long,
+    "i": ctypes.c_int,
 }
+
 
 class _obj_t(ctypes.Structure):
     _fields_ = [  # noqa: RUF012
@@ -153,7 +153,7 @@ class _obj_t(ctypes.Structure):
         ("pd", gint_t),
         ("m_panel", gint_t),
         ("n_panel", gint_t),
-        ("pad", ctypes.c_byte*64)
+        ("pad", ctypes.c_byte * 64),
     ]
 
 
@@ -191,7 +191,14 @@ class _obj_t(ctypes.Structure):
 
 libblis.bli_amaxv.argtypes = [ctypes.POINTER(_obj_t), ctypes.POINTER(_obj_t)]
 libblis.bli_amaxv.restype = None
-libblis.bli_obj_create.argtypes = [c_int, gint_t, gint_t, gint_t, gint_t, ctypes.POINTER(_obj_t)]
+libblis.bli_obj_create.argtypes = [
+    c_int,
+    gint_t,
+    gint_t,
+    gint_t,
+    gint_t,
+    ctypes.POINTER(_obj_t),
+]
 libblis.bli_obj_create.restype = None
 
 
@@ -228,40 +235,49 @@ def bli_allocmatrix(shape, order="C", dtype=np.float64):
     else:
         raise ValueError(f"Unknown order: {order}")
     obj = _obj_t()
-    
-    libblis.bli_obj_create.argtypes = [ctypes.c_int, ctypes.c_long, ctypes.c_long, ctypes.c_long, ctypes.c_long, ctypes.POINTER(_obj_t)]
+
+    libblis.bli_obj_create.argtypes = [
+        ctypes.c_int,
+        ctypes.c_long,
+        ctypes.c_long,
+        ctypes.c_long,
+        ctypes.c_long,
+        ctypes.POINTER(_obj_t),
+    ]
     libblis.bli_obj_create.restype = None
-    
+
     libblis.bli_obj_create(dt, m, n, rs, cs, ctypes.byref(obj))
-    
-    nelem = (m-1)*obj.rs + (n-1)*obj.cs + 1
+
+    nelem = (m - 1) * obj.rs + (n - 1) * obj.cs + 1
     nbytes = nelem * obj.elem_size
     bufptr = ctypes.cast(obj.buffer, ctypes.POINTER(ctypes.c_byte))
     arr = np.ctypeslib.as_array(bufptr, shape=(nbytes,))
     arr = arr.view(np.dtype(dtype))
-    arr = np.lib.stride_tricks.as_strided(arr,
-                                          shape,
-                                          (obj.rs * arr.itemsize, obj.cs * arr.itemsize)
-                                          )
+    arr = np.lib.stride_tricks.as_strided(
+        arr, shape, (obj.rs * arr.itemsize, obj.cs * arr.itemsize)
+    )
     return obj, arr
     libblis.bli_obj_free(ctypes.byref(obj))
     return None, None
 
-def bli_createscalar(alpha, typechar='d'):
+
+def bli_createscalar(alpha, typechar="d"):
     obj = _obj_t()
-    libblis.bli_obj_create_1x1(
+    libblis.bli_obj_scalar_init_detached(
         ctypes.c_int(typechar_to_blis_dt[typechar]), ctypes.byref(obj)
     )
-    scalarptr = ctypes.cast(ctypes.pointer(obj.scalar), 
-                            ctypes.POINTER(typechar_to_ctypes[typechar]))
-    
-    if typechar in ('F', 'D'):
+    scalarptr = ctypes.cast(
+        ctypes.pointer(obj.scalar), ctypes.POINTER(typechar_to_ctypes[typechar])
+    )
+
+    if typechar in ("F", "D"):
         alpha = complex(alpha)
         scalarptr.contents.value.real = alpha.real
         scalarptr.contents.value.imag = alpha.imag
     else:
         scalarptr.contents.value = alpha
     return obj
+
 
 def bli_readscalar(obj):
     dt = obj.info & 0x7
@@ -271,13 +287,14 @@ def bli_readscalar(obj):
         return ctypes.cast(obj.buffer, ctypes.POINTER(ctypes.c_double)).contents.value
     if dt == BLIS_SCOMPLEX:
         scal = ctypes.cast(obj.buffer, ctypes.POINTER(_scomplex)).contents
-        return scal.real + 1j*scal.imag
+        return scal.real + 1j * scal.imag
     if dt == BLIS_DCOMPLEX:
         scal = ctypes.cast(obj.buffer, ctypes.POINTER(_dcomplex)).contents
-        return scal.real + 1j*scal.imag
+        return scal.real + 1j * scal.imag
     if dt == BLIS_INT:
         return ctypes.cast(obj.buffer, ctypes.POINTER(gint_t)).contents.value
     raise ValueError("Unknown blis datatype")
+
 
 def bli_obj_free(obj):
     libblis.bli_obj_free(ctypes.byref(obj))

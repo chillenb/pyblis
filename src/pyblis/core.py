@@ -36,11 +36,12 @@ def _load_blis():
             Path(sys.prefix) / "lib64",
         ]
     )
-    for path in blis_search_paths:
-        try:
-            return np.ctypeslib.load_library("libblis", path)
-        except OSError:
-            pass
+    for blis_name in ("libblis", "blis"):
+        for path in blis_search_paths:
+            try:
+                return np.ctypeslib.load_library(blis_name, path)
+            except OSError:
+                pass
     return ctypes.CDLL("libblis.so")
 
 

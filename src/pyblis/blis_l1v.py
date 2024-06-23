@@ -18,7 +18,7 @@ def check_vecargs(*args):
         assert a.dtype.type == c, f"dtype was {a.dtype.type}, expected {c}"
 
 
-def bli_addv(x, y, conj=False):
+def addv(x, y, conj=False):
     check_vecargs(x, y)
     xo = core.bli_obj_create_from(x)
     yo = core.bli_obj_create_from(y)
@@ -27,7 +27,7 @@ def bli_addv(x, y, conj=False):
     libblis.bli_addv(ctypes.byref(xo), ctypes.byref(yo))
 
 
-def bli_amaxv(x):
+def amaxv(x):
     xo = core.bli_obj_create_from(x)
     into = core.bli_createscalar(0, typechar="l")
     retval = gint_t()
@@ -38,7 +38,7 @@ def bli_amaxv(x):
     return core.bli_readscalar(into)
 
 
-def bli_axpyv(alpha, x, y, conj=False):
+def axpyv(alpha, x, y, conj=False):
     objalpha = core.bli_createscalar(alpha)
     check_vecargs(x, y)
     if np.iscomplex(alpha):
@@ -50,7 +50,27 @@ def bli_axpyv(alpha, x, y, conj=False):
     libblis.bli_axpyv(ctypes.byref(objalpha), ctypes.byref(xo), ctypes.byref(yo))
 
 
-def bli_copyv(x, y, conj=False):
+def axpbyv(alpha, x, beta, y, conjx=False, conjy=False):
+    objalpha = core.bli_createscalar(alpha)
+    objbeta = core.bli_createscalar(beta)
+    check_vecargs(x, y)
+    if np.iscomplex(alpha) or np.iscomplex(beta):
+        assert np.iscomplexobj(y)
+    xo = core.bli_obj_create_from(x)
+    yo = core.bli_obj_create_from(y)
+    if conjx:
+        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
+    if conjy:
+        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(yo))
+    libblis.bli_axpbyv(
+        ctypes.byref(objalpha),
+        ctypes.byref(xo),
+        ctypes.byref(objbeta),
+        ctypes.byref(yo),
+    )
+
+
+def copyv(x, y, conj=False):
     check_vecargs(x, y)
     xo = core.bli_obj_create_from(x)
     yo = core.bli_obj_create_from(y)
@@ -59,7 +79,7 @@ def bli_copyv(x, y, conj=False):
     libblis.bli_copyv(ctypes.byref(xo), ctypes.byref(yo))
 
 
-def bli_dotv(x, y, conjx=False, conjy=False):
+def dotv(x, y, conjx=False, conjy=False):
     check_vecargs(x, y)
     xo = core.bli_obj_create_from(x)
     yo = core.bli_obj_create_from(y)
@@ -71,3 +91,96 @@ def bli_dotv(x, y, conjx=False, conjy=False):
     rho = core.bli_createscalar(0, resdtype.char)
     libblis.bli_dotv(ctypes.byref(xo), ctypes.byref(yo), ctypes.byref(rho))
     return core.bli_readscalar(rho)
+
+
+def dotxv(alpha, x, y, beta, conjx=False, conjy=False):
+    objalpha = core.bli_createscalar(alpha)
+    objbeta = core.bli_createscalar(beta)
+    check_vecargs(x, y)
+    if np.iscomplex(alpha) or np.iscomplex(beta):
+        assert np.iscomplexobj(y)
+    xo = core.bli_obj_create_from(x)
+    yo = core.bli_obj_create_from(y)
+    if conjx:
+        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
+    if conjy:
+        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(yo))
+    resdtype = np.result_type(x, y)
+    rho = core.bli_createscalar(0, resdtype.char)
+    libblis.bli_dotxv(
+        ctypes.byref(objalpha),
+        ctypes.byref(xo),
+        ctypes.byref(yo),
+        ctypes.byref(objbeta),
+        ctypes.byref(rho),
+    )
+    return core.bli_readscalar(rho)
+
+
+def invertv(x, conj=False):
+    xo = core.bli_obj_create_from(x)
+    check_vecargs(x)
+    if conj:
+        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
+    libblis.bli_invertv(ctypes.byref(xo))
+
+
+def invscalv(alpha, x):
+    objalpha = core.bli_createscalar(alpha)
+    check_vecargs(x)
+    xo = core.bli_obj_create_from(x)
+    libblis.bli_invscalv(ctypes.byref(objalpha), ctypes.byref(xo))
+
+
+def scalv(alpha, x):
+    objalpha = core.bli_createscalar(alpha)
+    check_vecargs(x)
+    xo = core.bli_obj_create_from(x)
+    libblis.bli_scalv(ctypes.byref(objalpha), ctypes.byref(xo))
+
+
+def scal2v(alpha, x, y, conj=False):
+    objalpha = core.bli_createscalar(alpha)
+    check_vecargs(x, y)
+    xo = core.bli_obj_create_from(x)
+    yo = core.bli_obj_create_from(y)
+    if conj:
+        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
+    libblis.bli_scal2v(ctypes.byref(objalpha), ctypes.byref(xo), ctypes.byref(yo))
+
+
+def setv(alpha, x):
+    objalpha = core.bli_createscalar(alpha)
+    check_vecargs(x)
+    xo = core.bli_obj_create_from(x)
+    libblis.bli_setv(ctypes.byref(objalpha), ctypes.byref(xo))
+
+
+def setrv(alpha, x):
+    objalpha = core.bli_createscalar(alpha)
+    check_vecargs(x)
+    xo = core.bli_obj_create_from(x)
+    libblis.bli_setrv(ctypes.byref(objalpha), ctypes.byref(xo))
+
+
+def setiv(alpha, x):
+    objalpha = core.bli_createscalar(alpha)
+    check_vecargs(x)
+    xo = core.bli_obj_create_from(x)
+    libblis.bli_setiv(ctypes.byref(objalpha), ctypes.byref(xo))
+
+
+def subv(x, y, conj=False):
+    check_vecargs(x, y)
+    xo = core.bli_obj_create_from(x)
+    yo = core.bli_obj_create_from(y)
+    if conj:
+        libblis.bli_obj_set_conj(core.BLIS_CONJ_NO_TRANSPOSE, ctypes.byref(xo))
+    libblis.bli_subv(ctypes.byref(xo), ctypes.byref(yo))
+
+
+def swapv(x, y):
+    check_vecargs(x, y)
+    xo = core.bli_obj_create_from(x)
+    yo = core.bli_obj_create_from(y)
+    libblis.bli_swapv(ctypes.byref(xo), ctypes.byref(yo))

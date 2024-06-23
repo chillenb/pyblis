@@ -32,7 +32,7 @@ def gemmt(
     transb=False,
     conja=False,
     conjb=False,
-    uplo_c="L",
+    uplo_c="D",
 ):
     objalpha = core.bli_createscalar(alpha)
     objbeta = core.bli_createscalar(beta)
@@ -54,7 +54,7 @@ def gemmt(
 
 
 def hemm(
-    alpha, a, b, beta, c, side_a="L", uplo_a="L", conja=False, transb=False, conjb=False
+    alpha, a, b, beta, c, side_a="L", uplo_a="D", conja=False, transb=False, conjb=False
 ):
     objalpha = core.bli_createscalar(alpha)
     objbeta = core.bli_createscalar(beta)
@@ -79,7 +79,7 @@ def hemm(
     )
 
 
-def herk(alpha, a, beta, c, uplo_c="L", transa=False, conja=False):
+def herk(alpha, a, beta, c, uplo_c="D", transa=False, conja=False):
     objalpha = core.bli_createscalar(alpha)
     objbeta = core.bli_createscalar(beta)
     ao = core.bli_obj_create_from(a)
@@ -102,7 +102,7 @@ def her2k(
     b,
     beta,
     c,
-    uplo_c="L",
+    uplo_c="D",
     transa=False,
     transb=False,
     conja=False,
@@ -128,7 +128,7 @@ def her2k(
 
 
 def symm(
-    alpha, a, b, beta, c, side_a="L", uplo_a="L", conja=False, transb=False, conjb=False
+    alpha, a, b, beta, c, side_a="L", uplo_a="D", conja=False, transb=False, conjb=False
 ):
     objalpha = core.bli_createscalar(alpha)
     objbeta = core.bli_createscalar(beta)
@@ -153,7 +153,7 @@ def symm(
     )
 
 
-def syrk(alpha, a, beta, c, uplo_c="L", transa=False, conja=False):
+def syrk(alpha, a, beta, c, uplo_c="D", transa=False, conja=False):
     objalpha = core.bli_createscalar(alpha)
     objbeta = core.bli_createscalar(beta)
     ao = core.bli_obj_create_from(a)
@@ -176,7 +176,7 @@ def syr2k(
     b,
     beta,
     c,
-    uplo_c="L",
+    uplo_c="D",
     transa=False,
     transb=False,
     conja=False,
@@ -202,7 +202,7 @@ def syr2k(
 
 
 def trmm(
-    alpha, a, b, side_a="L", uplo_a="L", transa=False, conja=False, unit_diag_a=False
+    alpha, a, b, side_a="L", uplo_a="D", transa=False, conja=False, unit_diag_a=False
 ):
     objalpha = core.bli_createscalar(alpha)
     ao = core.bli_obj_create_from(a)
@@ -228,7 +228,7 @@ def trmm3(
     beta,
     c,
     side_a="L",
-    uplo_a="L",
+    uplo_a="D",
     transa=False,
     conja=False,
     unit_diag_a=False,
@@ -258,7 +258,7 @@ def trmm3(
 
 
 def trsm(
-    alpha, a, b, side_a="L", uplo_a="L", transa=False, conja=False, unit_diag_a=False
+    alpha, a, b, side_a="L", uplo_a="D", transa=False, conja=False, unit_diag_a=False
 ):
     objalpha = core.bli_createscalar(alpha)
     ao = core.bli_obj_create_from(a)

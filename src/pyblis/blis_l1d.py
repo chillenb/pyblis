@@ -7,7 +7,7 @@ from pyblis.core import libblis
 def check_l1dargs(*args):
     if not args:
         pass
-    assert args[0].ndim == 1
+    assert args[0].ndim == 2
     N = args[0].size
     c = args[0].dtype.type
     for a in args[1:]:

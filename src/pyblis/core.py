@@ -222,6 +222,18 @@ def get_blis_side_t(side_char):
     raise ValueError(msg)
 
 
+def get_blis_uplo_t(uplo_char):
+    if uplo_char.upper() == "U":
+        return BLIS_UPPER
+    if uplo_char.upper() == "L":
+        return BLIS_LOWER
+    if uplo_char.upper() == "D":
+        return BLIS_DENSE
+
+    msg = f"Unknown uplo: {uplo_char}"
+    raise ValueError(msg)
+
+
 def get_blis_dtype(arr):
     return typechar_to_blis_dt[arr.dtype.char]
 

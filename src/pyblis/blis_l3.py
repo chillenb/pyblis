@@ -1,9 +1,7 @@
 import ctypes
 
-import numpy as np
-
 from pyblis import core
-from pyblis.core import gint_t, libblis
+from pyblis.core import libblis
 
 
 def gemm(alpha, a, b, beta, c, transa=False, transb=False, conja=False, conjb=False):

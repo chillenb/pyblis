@@ -433,3 +433,7 @@ def bli_obj_set_uplo(uplo, obj):
 
 def bli_obj_set_diag(diag, obj):
     obj.info = (obj.info & ~BLIS_DIAG_BIT) | diag
+
+
+def bli_obj_set_diag_offset(diag_off, obj):
+    obj.diag_off = diag_off
